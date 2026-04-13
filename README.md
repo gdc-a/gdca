@@ -2,7 +2,7 @@
 
 A modern, bilingual (English & Hindi) website for Gupta Dental Care, a dental clinic located in Gandhi Chauk, Kasia Bazaar, Kushinagar, UP.
 
-![Gupta Dental Care](1.1.1.1.jpg)
+![Gupta Dental Care](logo.jpg)
 
 ## 🦷 Features
 
