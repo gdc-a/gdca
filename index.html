@@ -365,7 +365,7 @@
                     style="position:absolute; top:8px; right:16px; background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;">&times;</button>
             </div>
 
-            <div class="row g-4">
+            <div class="row g-4" id="homeDynamicGallery">
                 <div class="col-lg-4 col-md-6">
                     <div class="gallery-item">
                         <img src="home/Dr. A Gupta.jpeg" alt="Clinic Reception" class="img-fluid rounded gallery-img">
@@ -650,6 +650,51 @@
             once: true,
             offset: 100
         });
+
+        // Dynamic Home Gallery from Cloudinary
+        async function initHomeGallery() {
+            let config = { cloudName: 'dnamua01d', galleryTag: 'gupta_dental_gallery' };
+            const saved = localStorage.getItem('cloudinary_config');
+            if (saved) config = JSON.parse(saved);
+
+            if (!config.cloudName) return;
+
+            try {
+                const url = `https://res.cloudinary.com/${config.cloudName}/image/list/${config.galleryTag}.json?cb=${Date.now()}`;
+                const response = await fetch(url);
+                if (!response.ok) return;
+
+                const data = await response.json();
+                const resources = data.resources || [];
+                if (resources.length === 0) return;
+
+                const container = document.getElementById('homeDynamicGallery');
+                if (!container) return;
+                
+                container.innerHTML = '';
+
+                // Show only first 6 images for home preview
+                resources.slice(0, 6).forEach(res => {
+                    const col = document.createElement('div');
+                    col.className = 'col-lg-4 col-md-6';
+                    
+                    const thumbUrl = `https://res.cloudinary.com/${config.cloudName}/image/upload/w_600,h_400,c_fill,f_auto,q_auto/${res.public_id}.${res.format}`;
+                    
+                    col.innerHTML = `
+                        <div class="gallery-item" onclick="window.location.href='gallery.html'">
+                            <img src="${thumbUrl}" alt="Clinic" class="img-fluid rounded gallery-img">
+                            <div class="gallery-overlay">
+                                <h5 style="font-family: 'Outfit', sans-serif; font-weight: bold;">Gupta Dental Care</h5>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(col);
+                });
+            } catch (e) {
+                console.warn("Home dynamic gallery failed:", e);
+            }
+        }
+        window.addEventListener('load', initHomeGallery);
     </script>
 </body>
 
