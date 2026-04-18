@@ -3,8 +3,8 @@
 // =====================================================
 
 let config = {
-    cloudName: '',
-    uploadPreset: '',
+    cloudName: 'dnamua01d',
+    uploadPreset: 'gdc-admin',
     apiKey: '',
     apiSecret: '',
     galleryTag: 'gupta_dental_gallery'
@@ -25,8 +25,8 @@ function loadConfig() {
     const saved = localStorage.getItem('cloudinary_config');
     if (saved) {
         config = JSON.parse(saved);
-        document.getElementById('cloudName').value = config.cloudName || '';
-        document.getElementById('uploadPreset').value = config.uploadPreset || '';
+        document.getElementById('cloudName').value = config.cloudName || 'dnamua01d';
+        document.getElementById('uploadPreset').value = config.uploadPreset || 'gdc-admin';
         document.getElementById('apiKey').value = config.apiKey || '';
         document.getElementById('apiSecret').value = config.apiSecret || '';
         document.getElementById('galleryTag').value = config.galleryTag || 'gupta_dental_gallery';
