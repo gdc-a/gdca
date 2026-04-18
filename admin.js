@@ -219,7 +219,7 @@ async function refreshGallery() {
         }
 
         const data = await response.json();
-        const resources = data.resources || [];
+        const resources = (data.resources || []).reverse();
 
         if (resources.length === 0) {
             listContainer.innerHTML = '<div class="text-center py-5 w-100 text-muted"><p>Gallery is empty. Try uploading some images!</p></div>';

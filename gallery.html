@@ -212,7 +212,7 @@
     <script>
         // Configuration from Admin Panel
         let cloudinaryConfig = {
-            cloudName: 'dnamua01d', // Enter your Cloud Name in Admin Panel
+            cloudName: 'dnamua01d', // Your New Cloud Name
             galleryTag: 'gupta_dental_gallery'
         };
 
@@ -259,7 +259,7 @@
             }
             
             const data = await response.json();
-            const resources = data.resources || [];
+            const resources = (data.resources || []).reverse();
             
             console.log(`Successfully loaded ${resources.length} images from Cloudinary.`);
             
