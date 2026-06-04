@@ -2,8 +2,14 @@
 // Gupta Dental Care - JavaScript Functionality
 // =====================================================
 
-// Language state
-let currentLanguage = 'en';
+// Helper to detect browser language (defaults to 'hi' if Hindi, otherwise 'en')
+const getBrowserLanguage = () => {
+    const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+    return lang.startsWith('hi') ? 'hi' : 'en';
+};
+
+// Language state - checks localStorage first, then browser language
+let currentLanguage = localStorage.getItem('preferredLanguage') || getBrowserLanguage();
 
 // ==================== Document Ready ====================
 document.addEventListener('DOMContentLoaded', function () {
@@ -13,6 +19,9 @@ document.addEventListener('DOMContentLoaded', function () {
     initActiveNavLinks();
     initGalleryPopup();
     initTheme();
+    initScrollProgressBar();
+    initFAQ();
+    initSymptomChecker();
 
     console.log('Gupta Dental Care website loaded successfully!');
 });
@@ -112,9 +121,13 @@ function toggleLanguage() {
     // Update body attribute for font family
     document.body.setAttribute('data-lang', currentLanguage);
 
-    // Update button text
+    // Update desktop button text
     const langText = document.getElementById('lang-text');
-    langText.textContent = currentLanguage === 'en' ? 'हिंदी' : 'English';
+    if (langText) langText.textContent = currentLanguage === 'en' ? 'हिंदी' : 'English';
+
+    // Update mobile button text (short form)
+    const langTextMobile = document.getElementById('lang-text-mobile');
+    if (langTextMobile) langTextMobile.textContent = currentLanguage === 'en' ? 'हिं' : 'En';
 
     // Update all bilingual content
     updateContent();
@@ -139,6 +152,11 @@ function updateContent() {
         } else {
             element.textContent = hindiText;
         }
+    });
+
+    // Recalculate max-height of active FAQ contents
+    document.querySelectorAll('.faq-item.active .faq-content').forEach(content => {
+        content.style.maxHeight = content.scrollHeight + 'px';
     });
 }
 
@@ -213,17 +231,18 @@ function initScrollAnimations() {
 
 // ==================== Load Saved Language Preference ====================
 window.addEventListener('load', function () {
-    const savedLanguage = localStorage.getItem('preferredLanguage');
+    const savedLanguage = localStorage.getItem('preferredLanguage') || getBrowserLanguage();
 
-    if (savedLanguage && savedLanguage !== currentLanguage) {
-        currentLanguage = savedLanguage;
-        document.body.setAttribute('data-lang', currentLanguage);
+    currentLanguage = savedLanguage;
+    document.body.setAttribute('data-lang', currentLanguage);
 
-        const langText = document.getElementById('lang-text');
-        langText.textContent = currentLanguage === 'en' ? 'हिंदी' : 'English';
+    const langText = document.getElementById('lang-text');
+    if (langText) langText.textContent = currentLanguage === 'en' ? 'हिंदी' : 'English';
 
-        updateContent();
-    }
+    const langTextMobile = document.getElementById('lang-text-mobile');
+    if (langTextMobile) langTextMobile.textContent = currentLanguage === 'en' ? 'हिं' : 'En';
+
+    updateContent();
 });
 
 // ==================== Gallery Image Modal (Optional Enhancement) ====================
@@ -473,6 +492,11 @@ function setLightMode() {
     document.documentElement.classList.add('light-mode');
     const bgText = document.getElementById('bg-mode-text');
     if (bgText) bgText.textContent = 'Dark Mode';
+    // Sync mobile toggle icon
+    const mobileBtn = document.getElementById('bg-toggle-mobile');
+    if (mobileBtn) mobileBtn.querySelector('i').className = 'fas fa-moon';
+    const desktopBtn = document.getElementById('bg-toggle');
+    if (desktopBtn) desktopBtn.querySelector('i').className = 'fas fa-moon';
     localStorage.setItem('backgroundMode', 'light');
 }
 
@@ -481,6 +505,11 @@ function setDarkMode() {
     document.documentElement.classList.remove('light-mode');
     const bgText = document.getElementById('bg-mode-text');
     if (bgText) bgText.textContent = 'Light Mode';
+    // Sync mobile toggle icon
+    const mobileBtn = document.getElementById('bg-toggle-mobile');
+    if (mobileBtn) mobileBtn.querySelector('i').className = 'fas fa-sun';
+    const desktopBtn = document.getElementById('bg-toggle');
+    if (desktopBtn) desktopBtn.querySelector('i').className = 'fas fa-sun';
     localStorage.setItem('backgroundMode', 'dark');
 }
 
@@ -495,3 +524,80 @@ function toggleBackgroundMode() {
 }
 
 window.toggleBackgroundMode = toggleBackgroundMode;
+
+// ==================== Scroll Progress Bar ====================
+function initScrollProgressBar() {
+    // Inject the progress bar container dynamically if not present in markup
+    if (!document.getElementById('scrollProgress')) {
+        const container = document.createElement('div');
+        container.className = 'scroll-progress-container';
+        container.innerHTML = '<div class="scroll-progress-bar" id="scrollProgress"></div>';
+        document.body.prepend(container);
+    }
+
+    window.addEventListener('scroll', function () {
+        const bar = document.getElementById('scrollProgress');
+        if (!bar) return;
+        const winScroll = document.documentElement.scrollTop || document.body.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
+        bar.style.width = scrolled + "%";
+    });
+}
+
+// ==================== Interactive FAQ Accordion ====================
+function initFAQ() {
+    const faqHeaders = document.querySelectorAll('.faq-header');
+    
+    faqHeaders.forEach(header => {
+        header.addEventListener('click', function () {
+            const faqItem = this.parentElement;
+            const faqContent = faqItem.querySelector('.faq-content');
+            const isActive = faqItem.classList.contains('active');
+            
+            // Close all other FAQs
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+                item.querySelector('.faq-content').style.maxHeight = '0px';
+            });
+            
+            // Toggle clicked FAQ
+            if (!isActive) {
+                faqItem.classList.add('active');
+                faqContent.style.maxHeight = faqContent.scrollHeight + "px";
+            }
+        });
+    });
+}
+
+// ==================== Interactive Symptom Checker ====================
+function initSymptomChecker() {
+    const symptomCards = document.querySelectorAll('.symptom-card');
+    const adviceBoxes = document.querySelectorAll('.symptom-advice-box');
+    
+    if (symptomCards.length === 0) return;
+
+    symptomCards.forEach(card => {
+        card.addEventListener('click', function () {
+            // Remove active classes
+            symptomCards.forEach(c => c.classList.remove('active'));
+            adviceBoxes.forEach(b => b.classList.remove('active'));
+
+            // Set active states
+            this.classList.add('active');
+            const symptomId = this.getAttribute('data-symptom-id');
+            const targetAdviceBox = document.getElementById(`symptom-advice-${symptomId}`);
+            
+            if (targetAdviceBox) {
+                targetAdviceBox.classList.add('active');
+
+                // Scroll smoothly to advice box
+                const navbarHeight = document.querySelector('.navbar').offsetHeight;
+                window.scrollTo({
+                    top: targetAdviceBox.offsetTop - navbarHeight - 40,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+}
